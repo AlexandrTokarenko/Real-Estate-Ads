@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Мої оголошення</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+    <link rel="icon" href="/img/favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js" integrity="sha512-WW8/jxkELe2CAiE4LvQfwm1rajOS8PHasCCx+knHG0gBHt8EXxS6T6tJRTGuDQVnluuAvMxWF4j8SNFDKceLFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/dist/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.1/font/bootstrap-icons.css}">
+</head>
+<body>
+<div class="fixed-top">
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <a class="navbar-brand" th:href="@{/}">Всі оголошення</a>
+        <a class="navbar-brand" th:href="@{/nedvizhimost/my-ads}">Мої оголошення</a>
+        <a class="navbar-brand" th:href="@{/nedvizhimost/bookmarks}">Обрані оголошення</a>
+        <!--    <a class="navbar-brand" th:href="@{/nedvizhimost/filter}">Фільтр</a>-->
+        <a class="btn btn-lg btn-outline-danger ml-auto" sec:authorize="isAuthenticated()" th:href="@{/auth/logout}">
+            <span>Вихід</span>
+        </a>
+    </nav>
+</div>
+<div>
+    <h2 style="margin-top: 100px" class="text-center">Мої оголошення</h2>
+</div>
+    <div class="container content">
+        <div class="row">
+            <div th:each="realty : ${realties}" class="col-md-4 mb-4 ">
+                <div class="card">
+                    <img th:src="${realty.getFirstImage()}" class="card-img-top" alt="Image">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${realty.header}"></h5>
+                        <p class="card-text">Кількість кімнат: <span th:text="${realty.numberOfRooms}"></span></p>
+                        <p class="card-text">Ціна: <span th:text="${realty.getPriceInFirstCurrency} + ' ' + ${realty.getFirstCurrency.name()} + ' / ' + ${realty.getPriceInSecondCurrency()} + ' ' + ${realty.getLastCurrency().name()}"></span></p>
+                        <p class="card-text">Житлова площа: <span th:text="${realty.housingArea} + ' m&sup2'"></span></p>
+<!--                        <p class="card-text">Адреса: <span th:text="${realty.address.region.title} + ', ' + ${realty.address.locality.title}"></span></p>-->
+                        <p th:if="${realty.address.district} == null" class="card-text">Адреса: <span th:text="${realty.address.region.title} + ', ' + ${realty.address.locality.title}"></span></p>
+                        <p th:if="${realty.address.district} != null" class="card-text">Адреса: <span th:text="${realty.address.region.title} + ', ' + ${realty.address.locality.title} + ', ' + ${realty.address.district.title}"></span></p>
+                        <a href="#" class="btn btn-primary mt-2 d-block" th:href="@{/nedvizhimost/information/realty/{realtyId}(realtyId=${realty.id})}">Детальніше</a>
+                        <a href="#" class="btn btn-outline-success mt-2 d-block" th:href="@{/nedvizhimost/my-ads/edit-ad/{realtyId}(realtyId=${realty.id})}">Редагувати</a>
+<!--                        <a href="#" class="btn btn-outline-danger mt-2 d-block"  th:href="@{/nedvizhimost/my-ads/delete-ad/{realtyId}(realtyId=${realty.id})}">Видалити</a>-->
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#myconfirm" th:attr="data-bs-link=@{/nedvizhimost/my-ads/delete-ad/{realtyId}(realtyId=${realty.id})}, data-bs-text=${realty.header}, data-bs-id=${realty.id}" class="btn btn-outline-danger mt-2 d-block"  >Видалити</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="modal fade" id="myconfirm" data-bs-backdrop="true" tabindex="-1" aria-labelledby="staticWarningLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticWarningLabel">Warning</h1>
+                <button type="button" class="btn-close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Ви дійсно хочете видалити оголошення "<span id="ad-txt" class="span-txt"></span>"?<br/>
+                <br>
+                Якщо натиснути «Видалити», цю дію неможливо буде скасувати.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Назад
+                </button>
+                <a class="btn btn-danger delete-button">Видалити</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a th:href="@{/nedvizhimost/my-ads/add-ad/property}" class="btn btn-success fixed-button">Викласти оголошення</a>
+
+<script>
+    let myConfirmModal = document.getElementById('myconfirm');
+    myConfirmModal.addEventListener('show.bs.modal', function (event) {
+        let button = event.relatedTarget;
+        let link = button.getAttribute('data-bs-link');
+        let tid = button.getAttribute('data-bs-id');
+        let text = button.getAttribute('data-bs-text');
+        let modalTitle = myConfirmModal.querySelector('.modal-title');
+        modalTitle.textContent = text
+        let span = document.getElementById('ad-txt')
+        span.textContent = text
+        let deleteButton = myConfirmModal.querySelector('.delete-button');
+        deleteButton.setAttribute("href", link)
+    })
+</script>
+
+<script th:src="@{webjars/jquery/3.7.1/dist/jquery.js}"></script>
+<script th:src="@{webjars/popperjs__core/2.11.8/dist/umd/popper.js}"></script>
+<script th:src="@{webjars/bootstrap/5.3.2/dist/js/bootstrap.bundle.js}"></script>
+</body>
+</html>
